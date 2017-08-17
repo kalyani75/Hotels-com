@@ -54,11 +54,27 @@ hotels-event-create-repo:
     type: fork
     has_issues: true
 
+hotels-onboarding-ui-repo:
+  service_id: githubpublic
+  parameters:
+    repo_name: "hotels-onboarding-ui-repo"
+    repo_url: "https://github.com/kalyani75/hotels-onboarding-ui"
+    type: fork
+    has_issues: true
+
 hotels-messaging-repo:
   service_id: githubpublic
   parameters:
     repo_name: "hotels-messaging"
     repo_url: "https://github.com/kalyani75/hotels-messaging"
+    type: fork
+    has_issues: true
+
+event-api-repo:
+  service_id: githubpublic
+  parameters:
+    repo_name: "event-api"
+    repo_url: "https://github.com/kalyani75/hotels-events-api"
     type: fork
     has_issues: true
 
@@ -165,6 +181,9 @@ hotels-event-create-build:
         SPACE_NAME: "{{deploy.parameters.selected-space}}"
         ORG_NAME: "{{deploy.parameters.selected-organization}}"
         REGION_ID: "{{deploy.parameters.selected-region}}"
+        API_KEY: "{{deploy.parameters.api_key}}"
+        API_SECRET: "{{deploy.parameters.api_secret}}"
+        API_HOST: "{{deploy.parameters.api_host}}"
       execute: true
     services: ["hotels-event-create-repo"]
   hidden: [form, description]
@@ -186,6 +205,43 @@ hotels-messaging-build:
     services: ["hotels-messaging-repo"]
 hidden: [form, description]
 
+onboarding-events-repo-build:
+  service_id: pipeline
+  parameters:
+    name: "events-api"
+    configuration:
+      content: $file(event-api-pipeline.yml)
+      env:
+        REPO: "event-api-repo"
+        REPO_BRANCH: "master"
+        SPACE_NAME: "{{deploy.parameters.selected-space}}"
+        ORG_NAME: "{{deploy.parameters.selected-organization}}"
+        REGION_ID: "{{deploy.parameters.selected-region}}"
+        APIC_URL_US: "{{deploy.parameters.apic-url-us}}"
+        APIC_USERNAME: "{{deploy.parameters.apic-username}}"
+        APIC_PASSWORD: "{{deploy.parameters.apic-password}}"
+        CF_APP_NAME: "{{deploy.parameters.api-app-name}}"
+      execute: true
+    services: ["event-api-repo"]
+hidden: [form, description]
+
+hotels-onboarding-ui-build:
+  service_id: pipeline
+  parameters:
+    name: "hotels-ui"
+    configuration:
+      content: $file(hotels-onboarding-ui.pipeline.yml)
+      env:
+        REPO: "hotels-onboarding-ui-repo"
+        REPO_BRANCH: "master"
+        CF_APP_NAME: "{{deploy.parameters.onboarding-ui-app-name}}"
+        SPACE_NAME: "{{deploy.parameters.selected-space}}"
+        ORG_NAME: "{{deploy.parameters.selected-organization}}"
+        REGION_ID: "{{deploy.parameters.selected-region}}"
+      execute: true
+    services: ["hotels-onboarding-ui-repo"]
+hidden: [form, description]
+
 #Web IDE
 webide:
   service_id: orion
@@ -196,6 +252,8 @@ deploy:
     $ref: deploy.json
   service-category: pipeline
   parameters:
+    api-app-name: "{{name}}-event-api"
+    apic-url-us: "us.apiconnect.ibmcloud.com"
     selected-region: "{{region}}"
     selected-organization: "{{organization}}"
     selected-space: "{{space}}"
@@ -207,4 +265,11 @@ deploy:
     hotelQ-app-name: "{{name}}-hotelQuery"
     controller-app-name: "{{name}}-controller"
     webui-app-name: "{{name}}-webui"
+    onboarding-ui-app-name : "{{name}}-onboarding-ui"
     openwhisk_auth: 
+    api_key:
+    api_secret:
+    api_host:
+    apic-username:
+    apic-password:
+    
